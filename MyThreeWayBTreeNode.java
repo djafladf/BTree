@@ -60,6 +60,7 @@ public class MyThreeWayBTreeNode {
 
 		if(keyList.size() == 3) // 최대 조건 위반
 		{	
+			
 			int mid = keyList.get(1); keyList.remove(1);
 			
 			// root에서 연산 시 부모가 없음으로 새로 생성해준다.
@@ -80,9 +81,12 @@ public class MyThreeWayBTreeNode {
 			// parent의 children이 비어있다면(root 갱신) children에 L, R을 넣어줌.
 			// 그렇지 않으면(root 이외의 연산) 현재 this의 parent의 children에 Index와 Index+1에 L,R을 넣어줌.
 			// set으로 this와 parent간의 연결을 끊음.
+			
 			if(parent.children.size() == 0) parent.children.add(0,L);
 			else {parent.children.set(ChildInd,L); L.ChildInd = ChildInd;}
 			parent.children.add(ChildInd+1,R);
+
+			parent.PrintChild();
 
 			parent.RenewChildInd();
 			parent.Add(mid);
@@ -91,12 +95,22 @@ public class MyThreeWayBTreeNode {
 	// 병합 진행
 	public void Merge()
 	{
+		// 형제 노드와 자신을 합침. 이 연산 후 자신의 노드는 없는 것으로 취급
 		parent.children.remove(ChildInd);
-		// 형제 노드에 Children 및 부모의 값을 합침.
-		MyThreeWayBTreeNode Brother = parent.children.get(ChildInd - 1);
-		Brother.Add(parent.keyList.get(0));
-		Brother.children.addAll(ChildInd * (Brother.children.size()-1),children);
-		parent.children.remove(ChildInd);
+		MyThreeWayBTreeNode Brother;
+		if(ChildInd == 2) Brother = parent.children.get(ChildInd - 1);
+		else {Brother = parent.children.get(ChildInd);Brother.ChildInd--;}
+
+		// 형제 노드에 자신의 자식을 모두 이어 붙임
+		if(ChildInd == 2){Brother.children.addAll(Brother.children.size(),children); ChildInd--;}
+		else Brother.children.addAll(0,children);
+		Brother.RenewChildInd();
+
+		// 형제 노드에 부모의 값을 넣음()
+		int z = parent.keyList.get(ChildInd);
+		parent.keyList.remove(ChildInd);
+		Brother.Add(z); 
+		
 	}
 
 	public int Del(int ind)
@@ -108,42 +122,50 @@ public class MyThreeWayBTreeNode {
 		{
 			if(keyList.size() != 0 || parent == null) return ret;	// 최소 조건을 만족하는 경우 반환
 			List<MyThreeWayBTreeNode> Borrow = new ArrayList<>(2);
-			i = 1;	
+			
+			
+			if(ChildInd != 0){ Borrow.add(parent.children.get(ChildInd-1));}
 			if(ChildInd != parent.children.size() - 1)Borrow.add(parent.children.get(ChildInd+1));
-			if(ChildInd != 0){ i = 0; Borrow.add(parent.children.get(ChildInd-1));}
 
+			i = 0;
 			int cnt, cnt2;
 			for(var a : Borrow){ if(a.keyList.size()> 1)	// 주변 형제 노드에게 값을 빌릴 수 있을 때
 				{
-					cnt = a.Del(i);
-					cnt2 = parent.keyList.get(1 - i);
+					cnt = a.Del(Borrow.size() -1 - i);
+					cnt2 = parent.keyList.get(i);
 					Add(cnt2);
-					parent.keyList.set(1-i, cnt);
+					parent.keyList.set(i, cnt);
 					return ret;
 				}
-				i--;
+				i++;
 			}
 
 			// 부모의 값 중 하나를 왼쪽 자식에 빌려줌( 부모 값의 개수 2 -> 1 : 최소 조건 유지)
 			if(parent.children.size() == 3)
 			{
 				parent.children.remove(ChildInd);
-				parent.children.get(0).Add(parent.Del(0));
+				parent.children.get(ChildInd).Add(parent.keyList.get(ChildInd));
+				parent.keyList.remove(ChildInd);
 				return ret;
 			}
 			else
 			{
 				MyThreeWayBTreeNode ccnt = this;
-				while(ccnt.keyList.size() == 0 && ccnt.keyList.size() != ccnt.children.size()-1)
+				System.out.println("Merge Start!");
+				while(ccnt.keyList.size() == 0 || ccnt.keyList.size() != ccnt.children.size()-1)
 				{
-					ccnt.Merge();
+					System.out.println("Merging!");
 					if(ccnt.parent == null) break;
+					ccnt.Merge();
 					ccnt = ccnt.parent;
 				}
+				System.out.println("Merge End!");
 			}
 		}
-		else	// 내부 노드에서(이 때는 무조건 자식 개수 조건이 위반됨)
+		else	// 내부 노드에서
 		{
+			// 자식의 조건을 만족하면 return;
+			if(keyList.size() == children.size() - 1) return ret;
 			// LMax를 가지고 있는 Leaf
 			MyThreeWayBTreeNode LMax = children.get(ind);
 			while(LMax.children.size()!=0) LMax = LMax.children.get(LMax.children.size()-1);
@@ -154,8 +176,10 @@ public class MyThreeWayBTreeNode {
 			if(LMax.keyList.size() > 1){Add(LMax.Del(LMax.keyList.size()-1)); return ret;}
 			if(RMin.keyList.size() > 1){Add(RMin.Del(0)); return ret;}
 			
+			
 			// 빌릴 수 없어도 빌린다.	
 			Add(LMax.keyList.get(0));
+			
 			LMax.Del(0);
 		}
 		return ret;
@@ -176,5 +200,15 @@ public class MyThreeWayBTreeNode {
 		return children.get(i).Branch(a);
 	}
 
+
+	// test용
+	public void PrintChild()
+	{
+		for(var a : children)
+		{
+			System.out.print(a.keyList); System.out.print(" ");
+		}
+		System.out.println();
+	}
 	
 }

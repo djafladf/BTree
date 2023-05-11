@@ -75,8 +75,8 @@ public class MyHashSet<Integer> implements Set<Integer> {
 
 	@Override
 	public boolean remove(Object o) {
-		
-		return false;
+		hashTable[(int)o % 3].remove((int)o);
+		return true;
 	}
 
 	@Override
@@ -117,7 +117,10 @@ public class MyHashSet<Integer> implements Set<Integer> {
 
 	@Override
 	public void clear() {
-		
-		throw new UnsupportedOperationException("Unimplemented method 'clear'");
+		for(int i = 0; i < 3; i++)
+		{
+			System.out.println("Hash" + (i+1));
+			hashTable[i].test(hashTable[i].root);
+		}
 	}
 }

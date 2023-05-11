@@ -10,7 +10,7 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 
 	// Data Abstraction은 예시일 뿐 자유롭게 B-Tree의 범주 안에서 어느정도 수정가능
 
-	private MyThreeWayBTreeNode root;
+	public MyThreeWayBTreeNode root;
 
 	public MyThreeWayBTree()
 	{
@@ -54,6 +54,18 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 
 	@Override
 	public boolean remove(Object o) {
+		if(root.keyList.size() == 0) return false;
+		HashIter a = new HashIter();
+		while(a.hasNext())
+		{
+			if(a.CurLeaf.keyList.get(a.CurInd) == (int)o)
+			{
+				a.remove();
+				return true;
+			}
+			if(a.CurLeaf.keyList.get(a.CurInd) > (int) o) return false;
+			a.next();
+		}
 		return false;
 	}
 
@@ -138,11 +150,11 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 	// test용(과제와 상관 없음)
 	public void test(MyThreeWayBTreeNode Leaf)
 	{
-		if(Leaf.parent != null) System.out.print("Parent : " + Leaf.parent.keyList + ", ");
+		root = root.FindRoot(root);
 		System.out.println("Cur : " + Leaf.keyList);
-		for(var a : Leaf.children){
-			System.out.print(a.ChildInd); System.out.print(" ");
-		}
+		// for(var a : Leaf.children){
+		// 	System.out.print(a.ChildInd); System.out.print(" ");
+		// }
 		System.out.println();
 		for(var a : Leaf.children){
 			System.out.print(a.keyList); System.out.print(" ");
