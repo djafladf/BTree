@@ -62,12 +62,14 @@ public class MyThreeWayBTreeNode {
 		{	
 			int mid = keyList.get(1); keyList.remove(1);
 			
+			// root에서 연산 시 부모가 없음으로 새로 생성해준다.
 			if(parent == null) parent = new MyThreeWayBTreeNode(null);
 
 			MyThreeWayBTreeNode L = new MyThreeWayBTreeNode(parent); L.Add(keyList.get(0));
 			MyThreeWayBTreeNode R = new MyThreeWayBTreeNode(parent); R.Add(keyList.get(1));
 
-			// 한번 이상 재귀되었을 때. children의 size는 무조건 4.
+			// 부모가 최대 조건을 어길 때, 자식이 4개가 되는데
+			// 왼쪽 2개를 왼쪽에, 오른쪽 2개를 오른쪽에 붙여준다.
 			if(children.size() != 0)	
 			{
 				L.children.add(this.children.get(0)); L.children.add(this.children.get(1));
@@ -85,6 +87,16 @@ public class MyThreeWayBTreeNode {
 			parent.RenewChildInd();
 			parent.Add(mid);
 		}
+	}
+	// 병합 진행
+	public void Merge()
+	{
+		parent.children.remove(ChildInd);
+		// 형제 노드에 Children 및 부모의 값을 합침.
+		MyThreeWayBTreeNode Brother = parent.children.get(ChildInd - 1);
+		Brother.Add(parent.keyList.get(0));
+		Brother.children.addAll(ChildInd * (Brother.children.size()-1),children);
+		parent.children.remove(ChildInd);
 	}
 
 	public int Del(int ind)
@@ -119,11 +131,15 @@ public class MyThreeWayBTreeNode {
 				parent.children.get(0).Add(parent.Del(0));
 				return ret;
 			}
-			// 부모의 자식이 2개 였으며, 빌릴 수 없을 때(Binary의 형태일 때)
 			else
 			{
-				Add(parent.keyList.get(0));
-				parent.Del(0);
+				MyThreeWayBTreeNode ccnt = this;
+				while(ccnt.keyList.size() == 0 && ccnt.keyList.size() != ccnt.children.size()-1)
+				{
+					ccnt.Merge();
+					if(ccnt.parent == null) break;
+					ccnt = ccnt.parent;
+				}
 			}
 		}
 		else	// 내부 노드에서(이 때는 무조건 자식 개수 조건이 위반됨)
@@ -137,17 +153,10 @@ public class MyThreeWayBTreeNode {
 			// LMax나 RMin에서 값을 빌릴 수 있을 때
 			if(LMax.keyList.size() > 1){Add(LMax.Del(LMax.keyList.size()-1)); return ret;}
 			if(RMin.keyList.size() > 1){Add(RMin.Del(0)); return ret;}
-
-
-			MyThreeWayBTreeNode LeftChild = children.get(ind);
-			MyThreeWayBTreeNode RightChild = children.get(ind+1);
-			// 합병
-			children.remove(ind);
-
-			if(keyList.size() == 0)	// Binary 형태였을 때(자식 수가 3이었을 떈 자식을 합치면 끝)
-			{
-
-			}
+			
+			// 빌릴 수 없어도 빌린다.	
+			Add(LMax.keyList.get(0));
+			LMax.Del(0);
 		}
 		return ret;
 	}

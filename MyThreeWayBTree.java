@@ -122,6 +122,7 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 			CurLeaf.Del(CurInd);
 			
 			// 트리가 재구성 됬을 때를 대비 
+			
 			HashIter Cnt = new HashIter();
 			while(Cnt.hasNext())
 			{
