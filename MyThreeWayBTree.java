@@ -46,10 +46,9 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 
 	@Override
 	public boolean add(Integer e) {
-		// if(contains(e)) return false;
+		if(contains(e)) return false;
 		root.FindAddLeaf(e);
 		root = root.FindRoot(root);
-		test(root);
 		return true;
 	}
 
@@ -142,7 +141,10 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		System.out.println("Cur : " + Leaf.keyList);
 		for(var a : Leaf.children){
 			System.out.print(a.ChildInd); System.out.print(" ");
-			
+		}
+		System.out.println();
+		for(var a : Leaf.children){
+			System.out.print(a.keyList); System.out.print(" ");
 		}
 		System.out.println();
 

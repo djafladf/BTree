@@ -39,20 +39,24 @@ public class MyThreeWayBTreeNode {
 	public void RenewChildInd()
 	{
 		int x = 0;
-		for(var a : children) a.ChildInd = x++;
+		for(var a : children)
+		{
+			a.parent = this;
+			a.ChildInd = x++;
+		}
 	}
 
 	// 값 추가 연산
 	public void Add(int a)
 	{
 		// 값을 넣을 위치를 찾음
-		int i = 0;
+		int x = 0;
 		for(var b : keyList)
 		{
 			if(a < b) break;
-			i++;
+			x++;
 		}
-		keyList.add(i,a);
+		keyList.add(x,a);
 
 		if(keyList.size() == 3) // 최대 조건 위반
 		{	
@@ -66,17 +70,16 @@ public class MyThreeWayBTreeNode {
 			// 한번 이상 재귀되었을 때. children의 size는 무조건 4.
 			if(children.size() != 0)	
 			{
-				L.children.add(this.children.get(0)); L.children.add(this.children.get(1)); 
+				L.children.add(this.children.get(0)); L.children.add(this.children.get(1));
 				L.RenewChildInd();
 				R.children.add(this.children.get(2)); R.children.add(this.children.get(3));
 				R.RenewChildInd();
 			}
-
 			// parent의 children이 비어있다면(root 갱신) children에 L, R을 넣어줌.
 			// 그렇지 않으면(root 이외의 연산) 현재 this의 parent의 children에 Index와 Index+1에 L,R을 넣어줌.
 			// set으로 this와 parent간의 연결을 끊음.
 			if(parent.children.size() == 0) parent.children.add(0,L);
-			else parent.children.set(ChildInd,L);
+			else {parent.children.set(ChildInd,L); L.ChildInd = ChildInd;}
 			parent.children.add(ChildInd+1,R);
 
 			parent.RenewChildInd();
@@ -152,11 +155,10 @@ public class MyThreeWayBTreeNode {
 	// 어떤 자식으로 갈 것인지 정함
 	MyThreeWayBTreeNode Branch(int a)
 	{
-		int i;
+		int i = 0;
 		if(children.size() == 0){
 			return this; 
 		}
-		i = 0;
 		for(var b : keyList)
 		{
 			if(a < b) break;
