@@ -90,12 +90,13 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		@Override
 		public boolean hasNext() 
 		{
-			return CurLeaf != null;
+			return CurLeaf != null && CurLeaf.keyList.size() != 0;
 		}
 
 		@Override
 		public Integer next() 
 		{
+			
 			int ret = CurLeaf.keyList.get(CurInd);
 			// 다음 순회가 Children Leaf인 경우
 			if(CurLeaf.children.size() > CurInd + 1)
@@ -106,11 +107,11 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 					if(CurLeaf.children.size() == 0) break;
 					CurLeaf = CurLeaf.children.get(0);
 				}
-				
 			}
 			// 다음 순회가 동일 Leaf내인 경우(최하단 Leaf에서 수행됨)
 			else if(CurLeaf.keyList.size() > CurInd + 1)
 			{
+				
 				CurInd = CurInd + 1;
 			}
 			// 다음 순회가 Parent Leaf인 경우

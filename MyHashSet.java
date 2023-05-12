@@ -47,16 +47,17 @@ public class MyHashSet<Integer> implements Set<Integer> {
 		}
 		@Override
 		public boolean hasNext() {
-			return CurInd != 3;
+			while(!CurIter.hasNext() && CurInd < 2)
+			{
+				CurIter = (Iterator<Integer>) hashTable[++CurInd].iterator();
+			}
+			return CurIter.hasNext();
 		}
 
 		@Override
-		public Integer next() {
+		public Integer next() 
+		{
 			Integer i = CurIter.next();
-			if(!CurIter.hasNext())
-			{
-				if(++CurInd < 3) CurIter = (Iterator<Integer>) hashTable[CurInd].iterator();
-			} 
 			return i;
 		}
 

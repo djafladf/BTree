@@ -86,8 +86,6 @@ public class MyThreeWayBTreeNode {
 			else {parent.children.set(ChildInd,L); L.ChildInd = ChildInd;}
 			parent.children.add(ChildInd+1,R);
 
-			parent.PrintChild();
-
 			parent.RenewChildInd();
 			parent.Add(mid);
 		}
@@ -98,11 +96,11 @@ public class MyThreeWayBTreeNode {
 		// 형제 노드와 자신을 합침. 이 연산 후 자신의 노드는 없는 것으로 취급
 		parent.children.remove(ChildInd);
 		MyThreeWayBTreeNode Brother;
-		if(ChildInd == 2) Brother = parent.children.get(ChildInd - 1);
+		if(ChildInd == parent.children.size()) Brother = parent.children.get(ChildInd - 1);
 		else {Brother = parent.children.get(ChildInd);Brother.ChildInd--;}
 
 		// 형제 노드에 자신의 자식을 모두 이어 붙임
-		if(ChildInd == 2){Brother.children.addAll(Brother.children.size(),children); ChildInd--;}
+		if(ChildInd == parent.children.size()){Brother.children.addAll(Brother.children.size(),children); ChildInd--;}
 		else Brother.children.addAll(0,children);
 		Brother.RenewChildInd();
 
@@ -148,18 +146,15 @@ public class MyThreeWayBTreeNode {
 				parent.keyList.remove(ChildInd);
 				return ret;
 			}
-			else
+			else	// 부모가 최소 조건을 만족하거나 Root일 때(hegith를 1 줄임)까지 Merge
 			{
 				MyThreeWayBTreeNode ccnt = this;
-				System.out.println("Merge Start!");
 				while(ccnt.keyList.size() == 0 || ccnt.keyList.size() != ccnt.children.size()-1)
 				{
-					System.out.println("Merging!");
 					if(ccnt.parent == null) break;
 					ccnt.Merge();
 					ccnt = ccnt.parent;
 				}
-				System.out.println("Merge End!");
 			}
 		}
 		else	// 내부 노드에서
