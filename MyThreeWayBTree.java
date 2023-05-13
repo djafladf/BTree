@@ -6,11 +6,14 @@ import java.util.Iterator;
 import java.util.NavigableSet;
 import java.util.SortedSet;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MyThreeWayBTree implements NavigableSet<Integer> {
 
 	// Data Abstraction은 예시일 뿐 자유롭게 B-Tree의 범주 안에서 어느정도 수정가능
 
-	public MyThreeWayBTreeNode root;
+	MyThreeWayBTreeNode root;
 
 	public MyThreeWayBTree()
 	{
@@ -31,6 +34,9 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		return root.keyList.size() == 0;
 	}
 
+
+	// Iterator로 돌면서 동일한 값이 나오면 true
+	// 자신보다 큰 값이 나오거나 Iter의 끝이면 false
 	@Override
 	public boolean contains(Object o) {
 		if(root.keyList.size() == 0) return false;
@@ -117,13 +123,16 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 			// 다음 순회가 Parent Leaf인 경우
 			else
 			{
-				int i = CurLeaf.ChildInd; if(CurLeaf.children.size() == 0) i = 100;
+				int i = CurLeaf.ChildInd; 
+				// root 단일 트리일 때 보정 용
+				if(CurLeaf.children.size() == 0) i = 100;	
 				while(CurLeaf.parent != null)
 				{
 					i = CurLeaf.ChildInd;
 					CurLeaf = CurLeaf.parent;
 					if(i != CurLeaf.keyList.size()) break;
 				}
+				// 오른쪽 끝에서 Root까지 다시 회귀한 경우
 				if(i >= CurLeaf.keyList.size()) CurLeaf = null;
 				CurInd = i;
 			}
@@ -135,7 +144,7 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 			CurLeaf.Del(CurInd);
 			
 			// 트리가 재구성 됬을 때를 대비 
-			
+			root = root.FindRoot(root);
 			HashIter Cnt = new HashIter();
 			while(Cnt.hasNext())
 			{
@@ -148,23 +157,33 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 
 	}
 
-	// test용(과제와 상관 없음)
-	public void test(MyThreeWayBTreeNode Leaf)
-	{
-		root = root.FindRoot(root);
-		System.out.println("Cur : " + Leaf.keyList);
-		// for(var a : Leaf.children){
-		// 	System.out.print(a.ChildInd); System.out.print(" ");
-		// }
-		System.out.println();
-		for(var a : Leaf.children){
-			System.out.print(a.keyList); System.out.print(" ");
-		}
-		System.out.println();
 
+	List<List<Integer>> fort;
+
+	public void testt(){
+		fort = new ArrayList<>(20);
+		for(int i = 0; i < 20; i++) fort.add(new ArrayList<>());
+		this.test(root,0);
+		int i = 0;
+		
+		for(var a : fort){if(a.size() == 0) break; i++;}
+		
+		i--;
+		for(int x = 0; x < i ; x++)
+		{
+			for(int y = 0 ; y < i - x ; y++)System.out.print("   ");
+			for(var a : fort.get(x))System.out.printf("%2d ",a);
+			System.out.println();
+		}
+	}
+
+	// test용(과제와 상관 없음)
+	public void test(MyThreeWayBTreeNode Leaf,int height)
+	{
+		for(var a : Leaf.keyList) fort.get(height).add(a);
 		for(var a : Leaf.children)
 		{
-			test(a);
+			test(a,height+1);
 		}
 	}
 
