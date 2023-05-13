@@ -2,7 +2,6 @@ package org.dfpl.db.hash.m19011677;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.lang.model.util.ElementScanner14;
 
 @SuppressWarnings("unused")
 public class MyThreeWayBTreeNode {
@@ -60,7 +59,6 @@ public class MyThreeWayBTreeNode {
 
 		if(keyList.size() == 3) // 최대 조건 위반
 		{	
-			
 			int mid = keyList.get(1); keyList.remove(1);
 			
 			// root에서 연산 시 부모가 없음으로 새로 생성해준다.
@@ -93,21 +91,27 @@ public class MyThreeWayBTreeNode {
 	// 병합 진행
 	public void Merge()
 	{
+		// System.out.println("Merge Sequence 1");
 		// 형제 노드와 자신을 합침. 이 연산 후 자신의 노드는 없는 것으로 취급
 		parent.children.remove(ChildInd);
 		MyThreeWayBTreeNode Brother;
 		if(ChildInd == parent.children.size()) Brother = parent.children.get(ChildInd - 1);
 		else {Brother = parent.children.get(ChildInd);Brother.ChildInd--;}
+		// System.out.println("Merge Sequence 2");
 
 		// 형제 노드에 자신의 자식을 모두 이어 붙임
 		if(ChildInd == parent.children.size()){Brother.children.addAll(Brother.children.size(),children); ChildInd--;}
 		else Brother.children.addAll(0,children);
 		Brother.RenewChildInd();
 
-		// 형제 노드에 부모의 값을 넣음()
+		// System.out.println("Merge Sequence 3");
+
+		// 형제 노드에 부모의 값을 넣음
 		int z = parent.keyList.get(ChildInd);
 		parent.keyList.remove(ChildInd);
 		Brother.Add(z); 
+
+		// System.out.println("Merge End");
 		
 	}
 
@@ -119,41 +123,60 @@ public class MyThreeWayBTreeNode {
 		if(children.size() == 0) // Leaf 노드에서
 		{
 			if(keyList.size() != 0 || parent == null) return ret;	// 최소 조건을 만족하는 경우 반환
-			List<MyThreeWayBTreeNode> Borrow = new ArrayList<>(2);
 			
-			
-			if(ChildInd != 0){ Borrow.add(parent.children.get(ChildInd-1));}
-			if(ChildInd != parent.children.size() - 1)Borrow.add(parent.children.get(ChildInd+1));
-
-			i = 0;
 			int cnt, cnt2;
-			for(var a : Borrow){ if(a.keyList.size()> 1)	// 주변 형제 노드에게 값을 빌릴 수 있을 때
+			if(ChildInd != 0)
+			{ 
+				if(parent.children.get(ChildInd-1).keyList.size() > 1)	// 왼쪽 형제 Node에서 값을 빌려옴
 				{
-					cnt = a.Del(Borrow.size() -1 - i);
-					cnt2 = parent.keyList.get(i);
-					Add(cnt2);
-					parent.keyList.set(i, cnt);
+					// System.out.println("RemoveType LeftBrotherBorrow");
+					Add(parent.keyList.get(ChildInd-1));
+					parent.keyList.set(ChildInd-1,parent.children.get(ChildInd-1).Del(1));
 					return ret;
 				}
-				i++;
+			}
+			if(ChildInd != parent.children.size() - 1)
+			{
+				if(parent.children.get(ChildInd+1).keyList.size() > 1)	// 오른쪽 형제 Node에서 값을 빌려옴
+				{
+					// System.out.println("RemoveType RightBrotherBorrow");
+					Add(parent.keyList.get(ChildInd));
+					parent.keyList.set(ChildInd,parent.children.get(ChildInd+1).Del(0));
+					return ret;
+				}
 			}
 
-			// 부모의 값 중 하나를 왼쪽 자식에 빌려줌( 부모 값의 개수 2 -> 1 : 최소 조건 유지)
+			// 부모의 값 중 하나를 왼쪽 자식에 빌려줌( 부모 값의 개수 2 -> 1, 자식의 갯수 3 -> 2 : 최소 조건 유지)
 			if(parent.children.size() == 3)
 			{
+				// System.out.println("RemoveType ParentBorrow");
 				parent.children.remove(ChildInd);
+				if(ChildInd == 2) ChildInd--;
 				parent.children.get(ChildInd).Add(parent.keyList.get(ChildInd));
 				parent.keyList.remove(ChildInd);
+				parent.RenewChildInd();
 				return ret;
 			}
-			else	// 부모가 최소 조건을 만족하거나 Root일 때(hegith를 1 줄임)까지 Merge
+			else	// 부모가 최소 조건을 만족하거나 Root일 때까지 Merge
 			{
+				// System.out.println("RemoveType Merge");
 				MyThreeWayBTreeNode ccnt = this;
 				while(ccnt.keyList.size() == 0 || ccnt.keyList.size() != ccnt.children.size()-1)
 				{
 					if(ccnt.parent == null) break;
 					ccnt.Merge();
 					ccnt = ccnt.parent;
+				}
+				ccnt.RenewChildInd();
+				// System.out.println("Merge End");
+
+				// 기존 Root의 값이 비게 되었을 때 자신의 자식을 Root로 변환되었음을 명시
+				// 이 후 FindRoot에서 Root가 갱신
+				if(ccnt.parent == null && ccnt.keyList.size() == 0 && ccnt.children.get(0).parent == ccnt)
+				{
+					// System.out.println("Tree Size Down!");
+					ccnt.children.get(0).parent = null;
+					ccnt.parent = ccnt.children.get(0);
 				}
 			}
 		}
@@ -168,10 +191,9 @@ public class MyThreeWayBTreeNode {
 			MyThreeWayBTreeNode RMin = children.get(ind+1);
 			while(RMin.children.size()!=0) RMin = RMin.children.get(0);
 			// LMax나 RMin에서 값을 빌릴 수 있을 때
-			if(LMax.keyList.size() > 1){Add(LMax.Del(LMax.keyList.size()-1)); return ret;}
-			if(RMin.keyList.size() > 1){Add(RMin.Del(0)); return ret;}
-			
-			
+			if(LMax.keyList.size() > 1){/*System.out.println("RemoveType LMaxBorrow");*/Add(LMax.Del(LMax.keyList.size()-1)); return ret;}
+			if(RMin.keyList.size() > 1){/*System.out.println("RemoveType RMinBorrow");*/Add(RMin.Del(0)); return ret;}
+
 			// 빌릴 수 없어도 빌린다.	
 			Add(LMax.keyList.get(0));
 			
@@ -205,5 +227,4 @@ public class MyThreeWayBTreeNode {
 		}
 		System.out.println();
 	}
-	
 }

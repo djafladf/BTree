@@ -10,13 +10,14 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 
 	// Data Abstraction은 예시일 뿐 자유롭게 B-Tree의 범주 안에서 어느정도 수정가능
 
-	public MyThreeWayBTreeNode root;
+	private MyThreeWayBTreeNode root;
 
 	public MyThreeWayBTree()
 	{
 		this.root = new MyThreeWayBTreeNode(null);
 	}
 
+	// Iterator로 모든 값을 돌며 순회한 횟수만큼 반환.
 	@Override
 	public int size() {
 		if(root.keyList.size() == 0) return 0;
@@ -26,11 +27,14 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		return i;
 	}
 
+	// Root가 비어있다면 빈 Tree
 	@Override
 	public boolean isEmpty() {
 		return root.keyList.size() == 0;
 	}
 
+	// Iterator로 돌며 같은 값을 만나면 True 반환
+	// 더 큰 값을 만나거나, 다음 값이 없으면 False 반환
 	@Override
 	public boolean contains(Object o) {
 		if(root.keyList.size() == 0) return false;
@@ -44,6 +48,9 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		return false;
 	}
 
+
+	// 동일한 값이 없을 경우 Tree에 추가
+	// 이 때 Root값이 변경 되었을 수도 있음으로, Root를 갱신해준다.
 	@Override
 	public boolean add(Integer e) {
 		if(contains(e)) return false;
@@ -52,6 +59,7 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		return true;
 	}
 
+	// Contain과 동일.
 	@Override
 	public boolean remove(Object o) {
 		if(root.keyList.size() == 0) return false;
@@ -69,6 +77,7 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		return false;
 	}
 
+	// Iterator 반환
 	@Override
 	public Iterator<Integer> iterator() {
 		return new HashIter();
@@ -81,6 +90,7 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		// 현재 Iterator가 가르키는 Leaf의 Ind
 		int CurInd;
 
+		// 생성 시, 가장 작은 값을 가진 Node로 Leaf를 이동시킴
 		public HashIter()
 		{
 			CurLeaf = root;
@@ -96,7 +106,6 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 		@Override
 		public Integer next() 
 		{
-			
 			int ret = CurLeaf.keyList.get(CurInd);
 			// 다음 순회가 Children Leaf인 경우
 			if(CurLeaf.children.size() > CurInd + 1)
@@ -117,13 +126,18 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 			// 다음 순회가 Parent Leaf인 경우
 			else
 			{
-				int i = CurLeaf.ChildInd; if(CurLeaf.children.size() == 0) i = 100;
+				int i = CurLeaf.ChildInd; 
+				// Root만으로 이루어진 Tree일 때 보정 용
+				if(CurLeaf.children.size() == 0) i = 100;
+
+				// 부모가 바로 오른쪽 위의 부모이거나, Root일 때까지
 				while(CurLeaf.parent != null)
 				{
 					i = CurLeaf.ChildInd;
 					CurLeaf = CurLeaf.parent;
 					if(i != CurLeaf.keyList.size()) break;
 				}
+				// 가장 큰 값에서 Root로 돌아왔을 경우 순회를 종료한다.
 				if(i >= CurLeaf.keyList.size()) CurLeaf = null;
 				CurInd = i;
 			}
@@ -145,17 +159,18 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 			CurLeaf = Cnt.CurLeaf;
 			CurInd = Cnt.CurInd;
 		}
-
 	}
 
-	// test용(과제와 상관 없음)
+	// test용
 	public void test(MyThreeWayBTreeNode Leaf)
 	{
 		root = root.FindRoot(root);
 		System.out.println("Cur : " + Leaf.keyList);
-		// for(var a : Leaf.children){
-		// 	System.out.print(a.ChildInd); System.out.print(" ");
-		// }
+		if(Leaf.children.size() == 0) return;
+		for(var a : Leaf.children){
+			System.out.print(a.ChildInd); System.out.print(" ");
+		}
+		
 		System.out.println();
 		for(var a : Leaf.children){
 			System.out.print(a.keyList); System.out.print(" ");

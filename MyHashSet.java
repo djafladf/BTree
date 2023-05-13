@@ -118,10 +118,5 @@ public class MyHashSet<Integer> implements Set<Integer> {
 
 	@Override
 	public void clear() {
-		for(int i = 0; i < 3; i++)
-		{
-			System.out.println("Hash" + (i+1));
-			hashTable[i].test(hashTable[i].root);
-		}
 	}
 }
