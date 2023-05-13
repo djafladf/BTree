@@ -113,7 +113,6 @@ public class MyThreeWayBTreeNode {
 
 	public int Del(int ind)
 	{
-		
 		int ret = keyList.get(ind);
 		int i;
 		keyList.remove(ind);
@@ -130,7 +129,6 @@ public class MyThreeWayBTreeNode {
 			int cnt, cnt2;
 			for(var a : Borrow){ if(a.keyList.size()> 1)	// 주변 형제 노드에게 값을 빌릴 수 있을 때
 				{
-					System.out.println("DelType1");
 					cnt = a.Del(Borrow.size() -1 - i);
 					cnt2 = parent.keyList.get(i);
 					Add(cnt2);
@@ -139,36 +137,23 @@ public class MyThreeWayBTreeNode {
 				}
 				i++;
 			}
-			
 
 			// 부모의 값 중 하나를 왼쪽 자식에 빌려줌( 부모 값의 개수 2 -> 1 : 최소 조건 유지)
 			if(parent.children.size() == 3)
 			{
-				System.out.println("DelType2");
 				parent.children.remove(ChildInd);
 				parent.children.get(ChildInd).Add(parent.keyList.get(ChildInd));
 				parent.keyList.remove(ChildInd);
-				parent.RenewChildInd();
 				return ret;
 			}
 			else	// 부모가 최소 조건을 만족하거나 Root일 때(hegith를 1 줄임)까지 Merge
 			{
-				System.out.println("DelType3(Merge)");
 				MyThreeWayBTreeNode ccnt = this;
 				while(ccnt.keyList.size() == 0 || ccnt.keyList.size() != ccnt.children.size()-1)
 				{
-					System.out.println("Merging!");
 					if(ccnt.parent == null) break;
 					ccnt.Merge();
 					ccnt = ccnt.parent;
-				}
-				System.out.println("MergeEnd!");
-
-				// 트리의 높이가 1 줄었으며, 기존 root값에 추가로 값이 들어오지 않았을 때
-				if(ccnt.parent == null && ccnt.keyList.size() == 0 && ccnt.children.get(0).parent == ccnt)
-				{
-					ccnt.children.get(0).parent = null;
-					ccnt.parent = ccnt.children.get(0);
 				}
 			}
 		}
@@ -182,12 +167,11 @@ public class MyThreeWayBTreeNode {
 			// RMax를 가지고 있는 Leaf
 			MyThreeWayBTreeNode RMin = children.get(ind+1);
 			while(RMin.children.size()!=0) RMin = RMin.children.get(0);
-			System.out.println("DelType4");
 			// LMax나 RMin에서 값을 빌릴 수 있을 때
 			if(LMax.keyList.size() > 1){Add(LMax.Del(LMax.keyList.size()-1)); return ret;}
 			if(RMin.keyList.size() > 1){Add(RMin.Del(0)); return ret;}
 			
-			System.out.println("DelType5");
+			
 			// 빌릴 수 없어도 빌린다.	
 			Add(LMax.keyList.get(0));
 			
