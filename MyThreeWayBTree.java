@@ -149,8 +149,8 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 			CurLeaf.Del(CurInd);
 			
 			// 트리가 재구성 됬을 때를 대비 
-			
 			HashIter Cnt = new HashIter();
+			root = root.FindRoot(root);
 			while(Cnt.hasNext())
 			{
 				if(Cnt.CurLeaf.keyList.get(Cnt.CurInd) > CurV) break;
@@ -160,6 +160,9 @@ public class MyThreeWayBTree implements NavigableSet<Integer> {
 			CurInd = Cnt.CurInd;
 		}
 	}
+	
+	// test용
+	public MyThreeWayBTreeNode returnRoot(){ return root;}
 
 	// test용
 	public void test(MyThreeWayBTreeNode Leaf)
